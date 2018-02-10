@@ -70,11 +70,7 @@ public class PythonObject {
      * @throws PythonAttributeException When there is no attribute on this object with that name.
      */
     public final PythonObject get(String attrName) throws PythonAttributeException {
-        mro = this.getMRO();
-        for(PythonObject obj : mro){
-            System.out.println(obj);
-        }
-        if(attrs.get(attrName) != null){
+        if(attrs.containsKey(attrName)){
             return attrs.get(attrName);
         }else{
             throw new PythonAttributeException(this, attrName);
@@ -96,6 +92,7 @@ public class PythonObject {
             System.out.println(obj);
         }
         attrs.put(attrName, value);
+
     }
 
     @Override
