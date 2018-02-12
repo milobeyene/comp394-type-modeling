@@ -14,7 +14,7 @@ class Expression(object):
         Returns the compile-time type of this expression, i.e. the most specific type that describes
         all the possible values it could take on at runtime. Subclasses must implement this method.
         """
-        raise NotImplementedError(type(self).__name__ + " must implement static_type()")
+        pass
 
     def check_types(self):
         """
@@ -30,6 +30,18 @@ class Variable(Expression):
     def __init__(self, name, declared_type):
         self.name = name                    #: The name of the variable
         self.declared_type = declared_type  #: The declared type of the variable (Type)
+    def static_type(self):
+        """
+        Returns the compile-time type of this expression, i.e. the most specific type that describes
+        all the possible values it could take on at runtime.
+        """
+        return self.declared_type
+    def check_types(self):
+        """
+        Validates the structure of this expression, checking for any logical inconsistencies in the
+        child nodes and the operation this expression applies to them.
+        """
+        return self.declared_type
 
 
 class Literal(Expression):
@@ -39,11 +51,35 @@ class Literal(Expression):
         self.value = value  #: The literal value, as a string
         self.type = type    #: The type of the literal (Type)
 
+    def static_type(self):
+        """
+        Returns the compile-time type of this expression, i.e. the most specific type that describes
+        all the possible values it could take on at runtime.
+        """
+        return self.type
+    def check_types(self):
+        """
+        Validates the structure of this expression, checking for any logical inconsistencies in the
+        child nodes and the operation this expression applies to them.
+        """
+        return self.type
 
 class NullLiteral(Literal):
     def __init__(self):
         super().__init__("null", Type.null)
 
+    def static_type(self):
+        """
+        Returns the compile-time type of this expression, i.e. the most specific type that describes
+        all the possible values it could take on at runtime.
+        """
+        return Type.null
+    def check_types(self):
+        """
+        Validates the structure of this expression, checking for any logical inconsistencies in the
+        child nodes and the operation this expression applies to them.
+        """
+        raise NotImplementedError(type(self).__name__ + " must implement check_types()")
 
 class MethodCall(Expression):
     """
@@ -55,6 +91,29 @@ class MethodCall(Expression):
         self.method_name = method_name  #: The name of the method to call (String)
         self.args = args                #: The method arguments (list of Expressions)
 
+    def static_type(self):
+        """
+        Returns the compile-time type of this expression, i.e. the most specific type that describes
+        all the possible values it could take on at runtime.
+        """
+
+        return Type.object.method_named(self.method_name).return_type
+        # (self, name, direct_supertypes=[], constructor=Constructor([]), methods=[])
+        # (self.receiver).method_named(self.method_name).return_type
+        # i need to ask someone about this...
+    def check_types(self):
+        """
+        Validates the structure of this expression, checking for any logical inconsistencies in the
+        child nodes and the operation this expression applies to them.
+        """
+        # self.receiver # object
+        # Type(self.receiver) #object's type
+        # Type(self.receiver).direct_supertypes #its super class
+        raise TypeError(
+            "{0} expects arguments of type {1}, but got {2}".format(
+                self.method_name,
+                names(), #how do I find the expected types of a method, Method(object).argument_types
+                names(map(lambda x: Type(x), self.args))))
 
 class ConstructorCall(Expression):
     """
@@ -64,6 +123,18 @@ class ConstructorCall(Expression):
         self.instantiated_type = instantiated_type  #: The type to instantiate (Type)
         self.args = args                            #: Constructor arguments (list of Expressions)
 
+    def static_type(self):
+        """
+        Returns the compile-time type of this expression, i.e. the most specific type that describes
+        all the possible values it could take on at runtime.
+        """
+        return self.instantiated_type
+    def check_types(self):
+        """
+        Validates the structure of this expression, checking for any logical inconsistencies in the
+        child nodes and the operation this expression applies to them.
+        """
+        raise NotImplementedError(type(self).__name__ + " must implement check_types()")
 
 class JavaTypeError(Exception):
     """ Indicates a compile-time type error in an expression.

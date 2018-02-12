@@ -70,12 +70,13 @@ public class PythonObject {
      * @throws PythonAttributeException When there is no attribute on this object with that name.
      */
     public final PythonObject get(String attrName) throws PythonAttributeException {
-        if(attrs.containsKey(attrName)){
-            return attrs.get(attrName);
-        }else{
-            throw new PythonAttributeException(this, attrName);
+        mro = this.getMRO();
+        for(PythonObject object : mro){
+            if(object.attrs.containsKey(attrName)){
+                return object.attrs.get(attrName);
+            }
         }
-
+        throw new PythonAttributeException(this, attrName);
     }
 
     /**
@@ -87,12 +88,7 @@ public class PythonObject {
      * @param value Its new value
      */
     public final void set(String attrName, PythonObject value) {
-        mro = this.getMRO();
-        for(PythonObject obj : mro){
-            System.out.println(obj);
-        }
         attrs.put(attrName, value);
-
     }
 
     @Override
