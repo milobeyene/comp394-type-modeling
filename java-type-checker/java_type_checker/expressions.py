@@ -101,10 +101,8 @@ class MethodCall(Expression):
         all the possible values it could take on at runtime.
         """
 
-        return Type.object.method_named(self.method_name).return_type
-        # (self, name, direct_supertypes=[], constructor=Constructor([]), methods=[])
-        # (self.receiver).method_named(self.method_name).return_type
-        # i need to ask someone about this...
+        return self.receiver.declared_type.method_named(self.method_name).return_type
+        # Woo! I solved it!
     def check_types(self):
         """
         Validates the structure of this expression, checking for any logical inconsistencies in the
@@ -127,7 +125,7 @@ class ConstructorCall(Expression):
         self.instantiated_type = instantiated_type  #: The type to instantiate (Type)
         self.args = args                            #: Constructor arguments (list of Expressions)
     
-    
+
     def static_type(self):
         """
         Returns the compile-time type of this expression, i.e. the most specific type that describes
