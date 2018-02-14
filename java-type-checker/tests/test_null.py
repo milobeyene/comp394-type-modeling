@@ -29,7 +29,7 @@ class TestNull(TypeTest):
             null.hashCode();
         """
         self.assertCompileError(
-            NoSuchMethod,  # Think: why shouldn’t this be NullPointerException?
+            NoSuchMethod,
             "Cannot invoke method hashCode() on null",
             MethodCall(
                 NullLiteral(),
